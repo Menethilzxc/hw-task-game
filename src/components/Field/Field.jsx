@@ -54,12 +54,6 @@ export const Field = () => {
 			}
 		}
 	};
-	// const resetBtn = () => {
-	// 	setIsDraw(false);
-	// 	setIsGameEnded(false);
-	// 	setCurrentPlayer('X');
-	// 	setField(['', '', '', '', '', '', '', '', '']);
-	// };
 
 	const resetGame = () => {
 		dispatch({ type: 'RESTART_GAME' });
