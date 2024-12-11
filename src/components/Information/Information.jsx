@@ -1,44 +1,35 @@
-import PropTypes from 'prop-types';
+import { useEffect, useState } from 'react';
+import { store } from '../../store';
 import styles from './Information.module.css';
 
-const InformationLayout = ({ isDraw, isGameEnded, currentPlayer }) => {
+export const Information = () => {
+	const [state, setState] = useState(store.getState());
+
+	useEffect(() => {
+		const unsubscribe = store.subscribe(() => {
+			setState(store.getState);
+		});
+
+		return () => unsubscribe();
+	}, []);
+
+	const getTitle = () => {
+		if (state.isDraw) {
+			return 'Ничья';
+		}
+
+		if (state.isGameEnded) {
+			return `Победа: ${state.currentPlayer}`;
+		}
+
+		return `Ходит: ${state.currentPlayer}`;
+	};
+
 	return (
 		<div className={styles.rootContainer}>
 			<div className={styles.infoContainer}>
-				<h1 className={styles.infoContainerTitle}>
-					{isDraw === true
-						? 'Ничья'
-						: '' +
-							(isDraw === false && isGameEnded === true
-								? `Победа: ${currentPlayer}`
-								: '') +
-							(isDraw === false && isGameEnded === false
-								? `Ходит: ${currentPlayer}`
-								: '')}
-				</h1>
+				<h1 className={styles.infoContainerTitle}>{getTitle()}</h1>
 			</div>
 		</div>
 	);
-};
-
-InformationLayout.propTypes = {
-	isDraw: PropTypes.bool,
-	isGameEnded: PropTypes.bool,
-	currentPlayer: PropTypes.string,
-};
-
-export const Information = ({ isDraw, isGameEnded, currentPlayer }) => {
-	return (
-		<InformationLayout
-			isDraw={isDraw}
-			isGameEnded={isGameEnded}
-			currentPlayer={currentPlayer}
-		/>
-	);
-};
-
-Information.propTypes = {
-	isDraw: PropTypes.bool,
-	isGameEnded: PropTypes.bool,
-	currentPlayer: PropTypes.string,
 };

@@ -1,21 +1,14 @@
-import PropTypes from 'prop-types';
+import { store } from '../../store';
 import styles from './Field.module.css';
 
-const FieldLayout = ({
-	field,
-	currentPlayer,
-	setField,
-	setCurrentPlayer,
-	WIN_PATTERNS,
-	setIsDraw,
-	setIsGameEnded,
-	isDraw,
-	isGameEnded,
-}) => {
-	const checkWinner = (field) => {
-		let winnerCompination = WIN_PATTERNS;
+export const Field = () => {
+	const state = store.getState();
+	const dispatch = store.dispatch;
 
-		for (let combination of winnerCompination) {
+	const checkWinner = (field) => {
+		let winnerCombination = state.WIN_PATTERNS;
+
+		for (let combination of winnerCombination) {
 			let [a, b, c] = combination;
 			if (field[a] && field[a] === field[b] && field[b] === field[c]) {
 				return field[a];
@@ -23,57 +16,67 @@ const FieldLayout = ({
 		}
 
 		if (field.every((item) => item !== '')) {
-			return setIsDraw(true);
+			dispatch({
+				type: 'SET_GAME_RESULT',
+				payload: { isDraw: true, isGameEnded: true },
+			});
 		}
 
 		return null;
 	};
 
-	const winner = checkWinner(field);
-	if (winner) {
-		setIsGameEnded(true);
-		setCurrentPlayer(winner);
-	}
-
 	const hundleMove = (index) => {
-		if (!winner) {
-			if (field[index] === '') {
-				let newField = [...field];
-				if (currentPlayer === 'X') {
-					newField[index] = 'X';
-				} else if (currentPlayer === 'O') {
-					newField[index] = 'O';
-				}
+		if (!state.isGameEnded && state.field[index] === '') {
+			const newField = [...state.field];
+			newField[index] = state.currentPlayer;
 
-				setField(newField);
+			dispatch({
+				type: 'SET_FIELD',
+				payload: newField,
+			});
 
-				let newCurrentPlayed = currentPlayer === 'X' ? 'O' : 'X';
-				setCurrentPlayer(newCurrentPlayed);
+			const winner = checkWinner(newField);
+
+			if (winner) {
+				dispatch({
+					type: 'SET_GAME_RESULT',
+					payload: { isDraw: false, isGameEnded: true },
+				});
+				dispatch({
+					type: 'SET_CURRENT_PLAYER',
+					payload: winner,
+				});
+			} else {
+				dispatch({
+					type: 'SET_CURRENT_PLAYER',
+					payload: state.currentPlayer === 'X' ? 'O' : 'X',
+				});
 			}
-		} else {
-			return;
 		}
 	};
+	// const resetBtn = () => {
+	// 	setIsDraw(false);
+	// 	setIsGameEnded(false);
+	// 	setCurrentPlayer('X');
+	// 	setField(['', '', '', '', '', '', '', '', '']);
+	// };
 
-	const resetBtn = () => {
-		setIsDraw(false);
-		setIsGameEnded(false);
-		setCurrentPlayer('X');
-		setField(['', '', '', '', '', '', '', '', '']);
+	const resetGame = () => {
+		dispatch({ type: 'RESTART_GAME' });
 	};
-
-	const resetButton = (
-		<button className={styles.resetBtn} onClick={resetBtn}>
-			Начать сначала
-		</button>
-	);
 
 	return (
 		<div className={styles.rootContainer}>
-			{isDraw === true || isGameEnded === true ? resetButton : ''}
+			{state.isDraw === true || state.isGameEnded === true ? (
+				<button className={styles.resetBtn} onClick={resetGame}>
+					Начать сначала
+				</button>
+			) : (
+				''
+			)}
 
 			<div className={styles.container}>
-				{field.map((item, index) => (
+				{state.field.map((item, index) => (
 					<div
 						key={index}
 						className={styles.containerCell}
@@ -85,54 +88,4 @@ const FieldLayout = ({
 			</div>
 		</div>
 	);
-};
-
-FieldLayout.propTypes = {
-	field: PropTypes.array,
-	setField: PropTypes.func,
-	currentPlayer: PropTypes.string,
-	setCurrentPlayer: PropTypes.func,
-	WIN_PATTERNS: PropTypes.array,
-	setIsGameEnded: PropTypes.func,
-	isDraw: PropTypes.bool,
-	setIsDraw: PropTypes.func,
-	isGameEnded: PropTypes.bool,
-};
-
-export const Field = ({
-	field,
-	currentPlayer,
-	setField,
-	setCurrentPlayer,
-	WIN_PATTERNS,
-	setIsDraw,
-	setIsGameEnded,
-	isDraw,
-	isGameEnded,
-}) => {
-	return (
-		<FieldLayout
-			field={field}
-			currentPlayer={currentPlayer}
-			setField={setField}
-			setCurrentPlayer={setCurrentPlayer}
-			WIN_PATTERNS={WIN_PATTERNS}
-			setIsDraw={setIsDraw}
-			setIsGameEnded={setIsGameEnded}
-			isDraw={isDraw}
-			isGameEnded={isGameEnded}
-		/>
-	);
-};
-
-Field.propTypes = {
-	field: PropTypes.array,
-	setField: PropTypes.func,
-	currentPlayer: PropTypes.string,
-	setCurrentPlayer: PropTypes.func,
-	WIN_PATTERNS: PropTypes.array,
-	setIsDraw: PropTypes.func,
-	setIsGameEnded: PropTypes.func,
-	isDraw: PropTypes.bool,
-	isGameEnded: PropTypes.bool,
 };
